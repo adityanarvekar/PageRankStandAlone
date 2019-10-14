@@ -33,7 +33,7 @@ public class FileIO {
     public static void main(String[] args) {
         try {
             // TODO code application logic here
-          mapperFunction("inputpagerank1.txt");
+          mapperFunction("inputpagerank.txt");
             
         } catch (IOException ex) {
             Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
@@ -110,12 +110,4 @@ public class FileIO {
         }
         outs.close();
     }
-
-    public static void writeFile() throws IOException {
-        String s = "I love programming";
-        BufferedWriter outs = new BufferedWriter(new FileWriter("xanadu.txt"));
-        outs.write(s);
-        outs.close();
-    }
-
 }
