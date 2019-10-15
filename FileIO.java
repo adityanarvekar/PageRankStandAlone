@@ -34,7 +34,9 @@ public class FileIO {
     public static void main(String[] args) {
         try {
             // TODO code application logic here
-            mapperFunction("inputpagerank.txt");
+            mapperFunction("inputpagerankdangling.txt");
+            // for dangling nodes logic write this above 'inputpagerankdangling'
+            // for no dangling node logic output write this above 'inputpagerank'
 
         } catch (IOException ex) {
             Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
@@ -111,7 +113,9 @@ public class FileIO {
     }
 
     public static void reducerFunction() throws IOException {
-        BufferedWriter outs = new BufferedWriter(new FileWriter("inputpagerank1.txt"));
+        BufferedWriter outs = new BufferedWriter(new FileWriter("inputpagerankdangling1.txt"));
+         // for dangling nodes logic write this above 'inputpagerankdangling1'
+         // for no dangling node logic output write this above 'inputpagerank1'
         String previousNID = "";
         for (int i = 0; i < prolist.size(); i++) {
             String nid = prolist.get(i).get("NID");
@@ -142,3 +146,4 @@ public class FileIO {
         outs.close();
     }
 }
+
