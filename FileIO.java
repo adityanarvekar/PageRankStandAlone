@@ -29,12 +29,13 @@ public class FileIO {
      * @throws java.io.FileNotFoundException
      */
     public static ArrayList<Map<String, String>> prolist = new ArrayList<Map<String, String>>();
-    public static int fileLines = 0;
+    public static int numberOfNodes = 0;
+    public static double deltaFactor = 0;
     public static void main(String[] args) {
         try {
             // TODO code application logic here
-          mapperFunction("inputpagerank.txt");
-            
+            mapperFunction("inputpagerank.txt");
+
         } catch (IOException ex) {
             Logger.getLogger(FileIO.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -44,66 +45,96 @@ public class FileIO {
         BufferedReader ins = new BufferedReader(new FileReader(fileName));
         ArrayList<Node> arrayNode = new ArrayList<>();
         while (ins.ready()) {
+            numberOfNodes++;
+            deltaFactor++;
             String s = ins.readLine();
 
             String[] equation = s.split(" ");
+            if (equation.length == 2) {
 
-            Node bigNode = new Node(equation);
+                Node bigNode = new Node(equation);
 
-            HashMap newHashMap = bigNode.getHashMap();
+                bigNode.setDanglingBool(true);
+                arrayNode.add(bigNode);
 
-            if (equation[2].contains(",")) {
-                String[] nodelist = equation[2].split(",");
-                double pgVar = Double.parseDouble(equation[1]) / nodelist.length;
-                for (String node : nodelist) {
-                    newHashMap.put(node, pgVar);
-                }
             } else {
+                Node bigNode = new Node(equation);
 
-                newHashMap.put(equation[2], Double.parseDouble(equation[1]));
+                HashMap newHashMap = bigNode.getHashMap();
 
+                if (equation[2].contains(",")) {
+                    String[] nodelist = equation[2].split(",");
+                    double pgVar = Double.parseDouble(equation[1]) / nodelist.length;
+                    for (String node : nodelist) {
+                        newHashMap.put(node, pgVar);
+                    }
+                } else {
+
+                    newHashMap.put(equation[2], Double.parseDouble(equation[1]));
+
+                }
+                arrayNode.add(bigNode);
             }
-            arrayNode.add(bigNode);
+
         }
         ins.close();
-        //DecimalFormat df2 = new DecimalFormat("#.##");
         for (int j = 0; j < arrayNode.size(); j++) {
+
             String arrayNodeId = arrayNode.get(j).getID();
             String neighbours = arrayNode.get(j).getNeighbours();
-            HashMap<String, Double> neh = arrayNode.get(j).getHashMap();
-            Collection<?> keys = neh.keySet();
-            for (Object key : keys) {
-                Map<String, String> datanum = new HashMap<String, String>();
-                datanum.put("NID", arrayNodeId);
-                datanum.put("KEY", String.valueOf(key));
-                datanum.put("PG", String.valueOf(neh.get(key)));
-                datanum.put("N", neighbours);
-                prolist.add(datanum);
+            boolean isDangling = arrayNode.get(j).getDanglingBool();
+            if (neighbours.length() == 0) {
+               Map<String, String> datanum = new HashMap<String, String>();
+                    datanum.put("NID", arrayNodeId);
+                    datanum.put("KEY", arrayNodeId);
+                    datanum.put("PG", String.valueOf(arrayNode.get(j).getPageRank()));
+                    datanum.put("N", neighbours);
+                    datanum.put("DanglingNode", isDangling+"");
+                    prolist.add(datanum);
+            } else {
+                HashMap<String, Double> neh = arrayNode.get(j).getHashMap();
+                Collection<?> keys = neh.keySet();
+                for (Object key : keys) {
+                    Map<String, String> datanum = new HashMap<String, String>();
+                    datanum.put("NID", arrayNodeId);
+                    datanum.put("KEY", String.valueOf(key));
+                    datanum.put("PG", String.valueOf(neh.get(key)));
+                    datanum.put("N", neighbours);
+                    datanum.put("DanglingNode", isDangling+"");
+                    prolist.add(datanum);
+                }
             }
-        }
 
+        }
         reducerFunction();
 
     }
 
     public static void reducerFunction() throws IOException {
-        BufferedWriter outs = new BufferedWriter(new FileWriter("inputpagerank2.txt"));
+        BufferedWriter outs = new BufferedWriter(new FileWriter("inputpagerank1.txt"));
         String previousNID = "";
         for (int i = 0; i < prolist.size(); i++) {
             String nid = prolist.get(i).get("NID");
             String neighbours = prolist.get(i).get("N");
+            String isDangling = prolist.get(i).get("DanglingNode");
             if (previousNID.equals(nid)) {
 
             } else {
                 double valueofnid = 0;
-                for (int j = 0; j < prolist.size(); j++) {
+                if(isDangling.contains("false")){
+                    for (int j = 0; j < prolist.size(); j++) {
                     if (prolist.get(j).get("KEY").equals(nid)) {
                         valueofnid += Double.parseDouble(prolist.get(j).get("PG"));
                     }
                 }
-                outs.write(nid+" "+valueofnid+" "+neighbours+"\n");
+                    outs.write(nid + " " + valueofnid + " " + neighbours + "\n");
+                }
+                else {
+                    valueofnid = Double.parseDouble(prolist.get(i).get("PG")) * (deltaFactor*2/numberOfNodes);
+                    outs.write(nid + " " + valueofnid+"\n");
+                }
+                
             }
-           
 
             previousNID = nid;
 
