@@ -16,13 +16,28 @@ public class Node {
     private double pageRank;
     private HashMap<String, Double> neighbourHashMap;
     private String neighbours;
-    
+    private boolean isDanglingNode;
     public Node(String[] equation){
         NId=equation[0];
         pageRank = Double.parseDouble(equation[1]);
-        neighbours = equation[2];
+        if(equation.length==2){
+            neighbours = "";
+        }
+        else{
+            neighbours = equation[2];
+        }
         neighbourHashMap = new HashMap<>();
+        isDanglingNode = false;
     }
+    
+    public void setDanglingBool(boolean val){
+        isDanglingNode = val;
+    }
+    
+    public boolean getDanglingBool(){
+        return isDanglingNode;
+    }
+    
     public HashMap getHashMap(){
         return neighbourHashMap;
     }
